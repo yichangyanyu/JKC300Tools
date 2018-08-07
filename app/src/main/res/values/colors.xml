@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="title_c">#ffffff</color>
+    <color name="mac_text_c">#44bfff</color>
+    <color name="item_bg_c">#044d72</color>
+    <color name="sear_btn_c">#274c7b</color>
+
+    <color name="but_press_bg_c">#597fb1</color>
+
+    <color name="background_bg">#033d5b</color>
+</resources>
