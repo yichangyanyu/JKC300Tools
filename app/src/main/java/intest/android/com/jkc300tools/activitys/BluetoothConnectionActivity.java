@@ -5,12 +5,12 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -26,7 +26,6 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -59,7 +58,8 @@ public class BluetoothConnectionActivity extends AppCompatActivity implements Vi
     private InputStream bluetoothSocketInputStream;
 
     private String host = "120.202.21.191";//172.16.17.155    172.16.13.105   120.202.21.191
-    private int port = 60605;//1234   60000   60605
+    //60605   60611
+    private int port = 60611;//1234   60000     60605   60611
     private TextView tv_platform_state;
 
     private final int OUT_Time = 15 * 1000;
@@ -211,6 +211,26 @@ public class BluetoothConnectionActivity extends AppCompatActivity implements Vi
 
         iv_connection_bluetooth = (ImageView) findViewById(R.id.iv_connection_bluetooth);
         iv_connection_platform = (ImageView) findViewById(R.id.iv_connection_platform);
+
+        TextView tv_bluetooth_platform_port = (TextView) findViewById(R.id.tv_bluetooth_platform_port);
+        tv_bluetooth_platform_port.setText("连接平台端口: " + port);
+
+        TextView tv_version = (TextView) findViewById(R.id.tv_version);
+        try {
+            tv_version.setText("版本号: " + getMobileVisionName(getApplicationContext()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getMobileVisionName(Context context) {
+        String vision = "";
+        try {
+            vision = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return vision;
     }
 
     /**************************和蓝牙建立连接****************************/
@@ -302,56 +322,6 @@ public class BluetoothConnectionActivity extends AppCompatActivity implements Vi
         }
     }
 
-    private class ReadMsgThread extends Thread {
-        @Override
-        public void run() {
-            try {
-                bluetoothSocketInputStream = bluetoothSocket.getInputStream();
-                bluetoothSocketOutputStream = bluetoothSocket.getOutputStream();
-                byte[] rec_b = new byte[2048];
-                while (null != bluetoothSocket && bluetoothSocket.isConnected()) {
-                    int length = bluetoothSocketInputStream.read(rec_b);
-                    if (length > 0) {
-                        timerHandler.removeMessages(reviceBluetoothData);
-                        timerHandler.sendEmptyMessageDelayed(reviceBluetoothData, reviceBluetoothDataTimeOut);
-                        MyLogger.jLog().e("reviceByte: " + Arrays.toString(rec_b));
-                        String message;
-                        if (length < 2048) {
-                            byte[] bytes = new byte[length];
-                            System.arraycopy(rec_b, 0, bytes, 0, length);
-                            message = new String(bytes, "UTF-8");
-                        } else {
-                            message = new String(rec_b, "UTF-8");
-                        }
-                        Message obtainMessage = timerHandler.obtainMessage();
-                        obtainMessage.what = 2003;
-                        obtainMessage.obj = length;
-                        timerHandler.sendMessage(obtainMessage);
-                        try {
-                            if (isConnected()) {
-                                sendMsg(message.getBytes());
-                                MyLogger.jLog().e("连接平台正常");
-                            } else {
-                                if (!socketConnectioning) {
-                                    timerHandler.sendEmptyMessageDelayed(2006, 0);
-                                } else {
-                                    MyLogger.jLog().e("正在连接平台2...");
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                MyLogger.jLog().e("连接断开了");
-                //timerHandler.sendEmptyMessageDelayed(2000, 100);
-            } catch (Exception e) {
-
-            }
-            super.run();
-        }
-    }
-
     private void connectionPlatform() {
         runOnUiThread(new Runnable() {
             @Override
@@ -366,12 +336,56 @@ public class BluetoothConnectionActivity extends AppCompatActivity implements Vi
                     socketConnectioning = true;
                     closedConnect();
                     connectionPlatform(host, port);
-                    MyLogger.jLog().e("正在连接平台");
+                    MyLogger.jLog().e("conection platform ing");
                 } else {
-                    MyLogger.jLog().e("正在连接平台中，丢弃");
+                    MyLogger.jLog().e("conection platform ing，丢弃");
                 }
             }
         });
+    }
+
+    private class ReadMsgThread extends Thread {
+        @Override
+        public void run() {
+            try {
+                bluetoothSocketInputStream = bluetoothSocket.getInputStream();
+                bluetoothSocketOutputStream = bluetoothSocket.getOutputStream();
+                byte[] rec_b = new byte[2048];
+                while (null != bluetoothSocket && bluetoothSocket.isConnected()) {
+                    int length = bluetoothSocketInputStream.read(rec_b);
+                    if (length > 0) {
+                        try {
+                            timerHandler.removeMessages(reviceBluetoothData);
+                            timerHandler.sendEmptyMessageDelayed(reviceBluetoothData, reviceBluetoothDataTimeOut);
+                            MyLogger.jLog().e("reviceByte: " + Arrays.toString(rec_b));
+                            byte[] bytes = new byte[length];
+                            System.arraycopy(rec_b, 0, bytes, 0, length);
+                            Message obtainMessage = timerHandler.obtainMessage();
+                            obtainMessage.what = 2003;
+                            obtainMessage.obj = length;
+                            timerHandler.sendMessage(obtainMessage);
+                            if (isConnected()) {
+                                sendMsg(bytes);
+                                MyLogger.jLog().e("conection platform normal");
+                            } else {
+                                if (!socketConnectioning) {
+                                    timerHandler.sendEmptyMessageDelayed(2006, 0);
+                                } else {
+                                    MyLogger.jLog().e("conection platform normal 2...");
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                MyLogger.jLog().e("not conection");
+                //timerHandler.sendEmptyMessageDelayed(2000, 100);
+            } catch (Exception e) {
+
+            }
+            super.run();
+        }
     }
 
     /* 停止客户端连接 */
@@ -552,7 +566,7 @@ public class BluetoothConnectionActivity extends AppCompatActivity implements Vi
                             sendMessageToBluetooth(reviceData);
                         }*/
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     MyLogger.jLog().e("异常");
                     //timerHandler.sendEmptyMessage(2006);
                     e.printStackTrace();
