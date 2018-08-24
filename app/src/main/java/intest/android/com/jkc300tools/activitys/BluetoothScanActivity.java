@@ -1,15 +1,19 @@
 package intest.android.com.jkc300tools.activitys;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -44,6 +48,7 @@ public class BluetoothScanActivity extends AppCompatActivity implements AdapterV
     private boolean seaching = false;
     private ImageView iv_run_scan;
     private TextView tv_title_right_id;
+    private int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +58,23 @@ public class BluetoothScanActivity extends AppCompatActivity implements AdapterV
         initData();
         initBluetoothScan();
 
-        isWifi(getApplicationContext());
+        //isWifi(getApplicationContext());
+        getPermission();
+    }
+
+    private void getPermission() {
+        //判断是否有权限
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //请求权限
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+            //判断是否需要 向用户解释，为什么要申请该权限
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_CONTACTS)) {
+                //Toast.makeText(this, "shouldShowRequestPermissionRationale", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     public void isWifi(Context mContext) {

@@ -58,8 +58,8 @@ public class BluetoothConnectionActivity extends AppCompatActivity implements Vi
     private InputStream bluetoothSocketInputStream;
 
     private String host = "120.202.21.191";//172.16.17.155    172.16.13.105   120.202.21.191
-    //60605   60611
-    private int port = 60611;//1234   60000     60605   60611
+    //60605   60611   60613
+    private int port = 60613;//1234   60000     60605   60611
     private TextView tv_platform_state;
 
     private final int OUT_Time = 15 * 1000;
@@ -169,6 +169,19 @@ public class BluetoothConnectionActivity extends AppCompatActivity implements Vi
         connectionBluetoth();
         connectionPlatform();
         //connectionPlatform(host, port);
+        //setWindowBrightness(100);
+    }
+
+    //设置当前窗口亮度
+    private void setWindowBrightness(int brightness) {
+        try {
+            Window window = getWindow();
+            WindowManager.LayoutParams lp = window.getAttributes();
+            lp.screenBrightness = brightness / 255.0f;
+            window.setAttributes(lp);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
