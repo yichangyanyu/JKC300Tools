@@ -57,9 +57,11 @@ public class BluetoothConnectionActivity extends AppCompatActivity implements Vi
     private OutputStream bluetoothSocketOutputStream;
     private InputStream bluetoothSocketInputStream;
 
-    private String host = "120.202.21.191";//172.16.17.155    172.16.13.105   120.202.21.191
+    private String host = "113.57.170.58";//172.16.17.155    172.16.13.105   120.202.21.191
     //60605   60611   60613
-    private int port = 60613;//1234   60000     60605   60611
+    //private int port = 60613;//1234   60000     60605   60611
+    //private int port = 62013;//62011
+    private int port = 62019;//62013  62015  62017
     private TextView tv_platform_state;
 
     private final int OUT_Time = 15 * 1000;
